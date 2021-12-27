@@ -66,6 +66,7 @@ class Slic {
         
         /* Generate an over-segmentation for an image. */
         void generate_superpixels(Image *image, int step, int nc);
+        void calculate_superpixel(Image *image, int step, int nc);
         /* Enforce connectivity for an image. */
         void create_connectivity(Image *image);
         
@@ -73,6 +74,13 @@ class Slic {
         void display_center_grid(Image *image, Color colour);
         void display_contours(Image *image, Color colour);
         void colour_with_cluster_means(Image *image);
+        void centersToArray(double *buffer);
+        void updateClusters(int* n_clusters,int width,int height);
+        void initialize(Image* image,int step,int nc);
+        int getCenters(){return centers.size();}
+
+        void recalculate_centers(Image *image);
+
 };
 
 #endif

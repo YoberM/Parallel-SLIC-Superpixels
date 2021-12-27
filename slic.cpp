@@ -86,6 +86,17 @@ double Slic::compute_dist(int ci, Coordinate pixel, Color colour) {
     //return sqrt(dc) + sqrt(ds * w);
 }
 
+double compute_dist(double *ci, Coordinate pixel, Color colour, int step, int nc) {
+    int ns = step;
+    double dc = sqrt(pow(*(ci+0) - colour.r, 2) + pow(*(ci+1)
+            - colour.g, 2) + pow(*(ci+2) - colour.b, 2));
+    double ds = sqrt(pow(*(ci+3) - pixel.x, 2) + pow(*(ci+4) - pixel.y, 2));
+    return sqrt(pow(dc / nc, 2) + pow(ds / ns, 2));
+    
+    //double w = 1.0 / (pow(ns / nc, 2));
+    //return sqrt(dc) + sqrt(ds * w);
+}
+
 /*
  * Find a local gradient minimum of a pixel in a 3x3 neighbourhood. This
  * method is called upon initialization of the cluster centers.
@@ -204,6 +215,71 @@ void Slic::generate_superpixels(Image *image, int step, int nc) {
 
     }
     
+}
+
+void Slic::recalculate_centers(Image *image){
+    /* Clear the center values. */
+    for (int j = 0; j < (int) centers.size(); j++) {
+        centers[j][0] = centers[j][1] = centers[j][2] = centers[j][3] = centers[j][4] = 0;
+        center_counts[j] = 0;
+    }
+    
+    /* Compute the new cluster centers. */
+    for (int j = 0; j < image->width; j++) {
+        for (int k = 0; k < image->height; k++) {
+            int c_id = clusters[j][k];
+            
+            if (c_id != -1) {
+                Color colour = get2D(image, k, j);
+                
+                centers[c_id][0] += colour.r;
+                centers[c_id][1] += colour.g;
+                centers[c_id][2] += colour.b;
+                centers[c_id][3] += j;
+                centers[c_id][4] += k;
+                
+                center_counts[c_id] += 1;
+            }
+        }
+    }
+
+    /* Normalize the clusters. */
+    for (int j = 0; j < (int) centers.size(); j++) {
+        centers[j][0] /= center_counts[j];
+        centers[j][1] /= center_counts[j];
+        centers[j][2] /= center_counts[j];
+        centers[j][3] /= center_counts[j];
+        centers[j][4] /= center_counts[j];
+    }
+}
+
+
+void calculate_superpixel(Image *image, int step, int nc, double * centers,int n_centers, 
+                        float *distances, int *clusters)
+{
+    for (int j = 0; j < image->width * image->height; j++) {
+
+            distances[j] = FLT_MAX;
+    }
+    for (int j = 0; j < n_centers; j+=5) {
+        /* Only compare to pixels in a 2 x step by 2 x step region. */
+        for (int k = centers[j+3] - step; k < centers[j+3] + step; k++) {
+            for (int l = centers[j+4] - step; l < centers[j+4] + step; l++) {
+            
+                if (k >= 0 && k < image->width && l >= 0 && l < image->height) {
+                    Color colour = get2D(image, l, k);
+                    double d = compute_dist((centers+j), Coordinate(k,l), colour,step,nc);
+                    
+                //     /* Update cluster allocation if the cluster minimizes the
+                //         distance. */
+                    if (d < distances[l*image->width + k]) {
+                            distances[l*image->width + k] = d;
+                             clusters[l*image->width + k] = j/5;
+                    } 
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -377,4 +453,38 @@ void Slic::colour_with_cluster_means(Image *image) {
             set2D(image, j, i, ncolour);
         }
     }
+}
+
+
+void Slic::centersToArray(double *buffer){
+    int head = 0;
+    for (int i = 0 ; i < centers.size(); i++){
+        for (int j = 0 ; j < 5; j++){
+            buffer[head] = centers[i][j];
+            head++;
+        }
+    }
+}
+
+void Slic::updateClusters(int* n_clusters,int width,int height){
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                clusters[i][j]= n_clusters[j*width+i];
+            }
+            
+        }
+}
+
+void Slic::initialize(Image* image,int step,int nc){
+    this->step = step;
+    this->nc = nc;
+    this->ns = step;
+
+    /* Clear previous data (if any), and re-initialize it. */
+    clear_data();
+    init_data(image);
+
+
 }
