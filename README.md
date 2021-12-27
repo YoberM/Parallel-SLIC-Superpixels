@@ -32,12 +32,20 @@ sudo systemctl enable sshd.service
 sudo systemctl start sshd.service
 
 
-#OPENSSH config
-En el archivo hosts, agregar tags para un mejor manejo de la red
-sudo nano /etc/hosts
+## OPENSSH config
+
+### /etc/hosts
+Este archivo puede identificar a un host mediante un tag, que facilita el uso de los clusters.
+    
+  
+### sudo nano /etc/hosts
+  
 ssh-keygen -t rsa
+
 cd .ssh
+
 sudo cp id_rsa.pub authorized_keys
+
 ssh-copy-id user@<ip> o user@<tag>
 
 
@@ -48,11 +56,18 @@ Ejemplo:
   ~/Escritorio/Parallel-SLIC-Superpixels *(rw,sync,crossmnt,fsid=0)
   |      Directorio a ser compartido  | |direccion ip| (|argumentos|)
  
+## Setup del proyecto
 
+### Local
+  Para pruebas locales, solo es necesario clonar el repositorio.
+  
+### Cluster
+  Es necesario instalar todos los requerimientos y ejecutar con mpirun
+  
 
 
   
-# SLIC Superpixel Implementation
+# Referencia: SLIC Superpixel Implementation
 This repository contains an implementation of the SLIC Superpixel algorithm by Achanta et al. (PAMI'12, vol. 34, num. 11, pp. 2274-2282). The C++ implementation is created to work with the strutures of OpenCV.
 
 ## Exemplary result
