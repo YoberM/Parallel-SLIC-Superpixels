@@ -1,5 +1,7 @@
 #include "slic.h"
+#include <iostream>
 
+using namespace std;
 /*
  * Constructor. Nothing is done here.
  */
@@ -262,6 +264,11 @@ void calculate_superpixel(Image *image, int step, int nc, double * centers,int n
             distances[j] = FLT_MAX;
     }
     for (int j = 0; j < n_centers; j+=5) {
+        if (centers[j] == -1){
+            cout << "pogdo alerta" << endl;
+        }
+    }
+    for (int j = 0; j < n_centers; j+=5) {
         /* Only compare to pixels in a 2 x step by 2 x step region. */
         for (int k = centers[j+3] - step; k < centers[j+3] + step; k++) {
             for (int l = centers[j+4] - step; l < centers[j+4] + step; l++) {
@@ -272,9 +279,9 @@ void calculate_superpixel(Image *image, int step, int nc, double * centers,int n
                     
                 //     /* Update cluster allocation if the cluster minimizes the
                 //         distance. */
-                    if (d < distances[l*image->width + k]) {
-                            distances[l*image->width + k] = d;
-                             clusters[l*image->width + k] = j/5;
+                    if (d < distances[k*image->height + l]) {
+                            distances[k*image->height + l] = d;
+                             clusters[k*image->height + l] = j/5;
                     } 
                 }
             }
@@ -471,7 +478,7 @@ void Slic::updateClusters(int* n_clusters,int width,int height){
         {
             for (int j = 0; j < height; j++)
             {
-                clusters[i][j]= n_clusters[j*width+i];
+                clusters[i][j]= n_clusters[i*height+j];
             }
             
         }

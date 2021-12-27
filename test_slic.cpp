@@ -67,14 +67,7 @@ int main(int argc, char *argv[]) {
     //Iteraciones
     for (int it = 0; it < 10; it++)
     {
-        float *local_distances=new float[img.width*img.height]{FLT_MAX};
-        
-        for (int i = 0; i < img.width*img.height; i++)
-        {
-            local_distances[i]=FLT_MAX;
-        }
-        
-
+        float *local_distances=new float[img.width*img.height];
 
         // Enviar centros
         int div = ceil(double(slic.getCenters())/double(p)) * 5 ;
@@ -86,7 +79,7 @@ int main(int argc, char *argv[]) {
             local_centers[i]=-1;
         }
 
-        slic.centersToArray(global_centers);
+            slic.centersToArray(global_centers);
 
         MPI_Scatter(global_centers,div,MPI_DOUBLE,local_centers,div, MPI_DOUBLE,0,MPI_COMM_WORLD);
         
@@ -113,9 +106,6 @@ int main(int argc, char *argv[]) {
 
         // a juntal 
         int i = 0;
-        if(my_rank==0){
-            cout <<"prooteadas\n";
-        }
         while (true){
             if ( int(my_rank/(pow(2,i))) % 2 != 0 ){ // Envia
                 // cout << "SOY: "<<my_rank<< " Y le envio a: " << my_rank-pow(2,i) << endl;
@@ -131,6 +121,9 @@ int main(int argc, char *argv[]) {
                     MPI_Recv(external_distances,img_tam,MPI_FLOAT,my_rank+pow(2,i),my_rank+pow(2,i),MPI_COMM_WORLD, MPI_STATUS_IGNORE); // RECIBIR DEL rank + 2^i      n -> 2n
                     MPI_Recv(external_clusters,img_tam,MPI_INT,my_rank+pow(2,i),my_rank+pow(2,i),MPI_COMM_WORLD, MPI_STATUS_IGNORE); // RECIBIR DEL rank + 2^i      n -> 2n
                     for (int i = 0; i < img_tam; i++){
+                        // if(external_distances[i]==0){
+                        //     cout <<"porotoalerta"<<endl;
+                        // }
                         if(external_distances[i]<local_distances[i]){
                             local_distances[i]=external_distances[i];
                             local_clusters[i]= external_clusters[i];
@@ -158,6 +151,8 @@ int main(int argc, char *argv[]) {
         delete[] local_distances;
 
     }
+
+    MPI_Barrier(MPI_COMM_WORLD);
     if(my_rank==0){
 
     slic.create_connectivity(&img);
