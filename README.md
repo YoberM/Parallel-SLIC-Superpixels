@@ -5,7 +5,7 @@
 Hamachi, para crear una red local virtual
 OpenSSH, Para la comunicacion entre los nodos
 NFS, Para tener una carpeta compartida entre todoso los nodos.
-OpenMPI, API para implementaciones paralelas
+Mpich, API para implementaciones paralelas
 
 ## Hamachi
 Tener instalado desde la SnapStore

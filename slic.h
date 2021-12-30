@@ -1,18 +1,6 @@
 #ifndef SLIC_H
 #define SLIC_H
 
-/* slic.h.
- *
- * Written by: Pascal Mettes.
- *
- * This file contains the class elements of the class Slic. This class is an
- * implementation of the SLIC Superpixel algorithm by Achanta et al. [PAMI'12,
- * vol. 34, num. 11, pp. 2274-2282].
- *
- * This implementation is created for the specific purpose of creating
- * over-segmentations in an OpenCV-based environment.
- */
-
 #include "Image.h"
 #include <stdio.h>
 #include <math.h>
@@ -33,7 +21,7 @@ using namespace std;
  * step-size (distance between initial cluster locations) and the colour
  * distance parameter.
  */
-/*asd*/
+
 
 class Slic {
     private:
@@ -65,22 +53,27 @@ class Slic {
         ~Slic();
         
         /* Generate an over-segmentation for an image. */
-        void generate_superpixels(Image *image, int step, int nc);
-        void calculate_superpixel(Image *image, int step, int nc);
+        void initialize(Image* image,int step,int nc);
+        void recalculate_centers(Image *image);
+
         /* Enforce connectivity for an image. */
         void create_connectivity(Image *image);
-        
+
+        /* Actualiza sus vectores a partir de primitivas */
+        void updateClusters(int* n_clusters,int width,int height);
+        void centersToArray(double *buffer);
+        int getCenters(){return centers.size();}
+
+
         /* Draw functions. Resp. displayal of the centers and the contours. */
         void display_center_grid(Image *image, Color colour);
         void display_contours(Image *image, Color colour);
         void colour_with_cluster_means(Image *image);
-        void centersToArray(double *buffer);
-        void updateClusters(int* n_clusters,int width,int height);
-        void initialize(Image* image,int step,int nc);
-        int getCenters(){return centers.size();}
 
-        void recalculate_centers(Image *image);
 
 };
+
+void calculate_superpixel(Image *image, int step, int nc);
+
 
 #endif

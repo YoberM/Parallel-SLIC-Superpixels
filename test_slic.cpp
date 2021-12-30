@@ -91,23 +91,27 @@ int main(int argc, char *argv[]) {
         //Se distribuyen los centros a ser procesados mediante un sccater
         MPI_Scatter(global_centers,div,MPI_DOUBLE,local_centers,div, MPI_DOUBLE,0,MPI_COMM_WORLD);
         
-        // A trabajal
-        // el modo de hacer q xd
-        
 
-        int number_centers = (my_rank + 1 != p ) ? div/5 : (div/5 - slic.getCenters()%p);
-        number_centers = div/5;
-        number_centers = slic.getCenters();
+        int number_centers = div;
+        if (my_rank == p - 1) {
+            number_centers = div/5 - (slic.getCenters()%p);
+            number_centers *= 5;
+        }
 
         // cada proceso calcula sus distancias y clusters
         calculate_superpixel(&img, step, nc , 
-                                local_centers,div, 
+                                local_centers,number_centers, 
                                local_distances, local_clusters);
         
 
         // Se juntan los resultados mediante un all to one en estructura de arbol log(p)
         int i = 0;
+        if (my_rank == 0){
+                cout << "iteracion" << endl;
+        }
         while (true){
+            
+            
             if ( int(my_rank/(pow(2,i))) % 2 != 0 ){ // Envia
                 
                 // nodo que envia sus resultados a los nodos en forma de arbol y espera la siguiente iteracion 
@@ -132,7 +136,7 @@ int main(int argc, char *argv[]) {
                     }
                     delete[] external_distances;
                     delete[] external_clusters;
-                }else{
+                }else if (my_rank == 0){
                     break;
                 }
             } 
