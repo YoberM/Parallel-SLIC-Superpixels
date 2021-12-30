@@ -2,69 +2,114 @@
 
 
 ## Requerimientos:
-Hamachi, para crear una red local virtual
-OpenSSH, Para la comunicacion entre los nodos
-NFS, Para tener una carpeta compartida entre todoso los nodos.
-Mpich, API para implementaciones paralelas
+* Hamachi : Es una aplicacion para crear la red local virtual (VLAN)
+* OpenSSH : Es una aplicacion para la comunicacion entre los nodos.
+* NFS     : Se usa para compartir una carpeta entre todos los nodos.
+* Mpich   : API para implementar programan que se ejecuten en paralelo.
 
+# Setup del proyecto
+## Notas
+   * ### Setup Local
+      * Para pruebas locales, solo es necesario clonar el repositorio y tener mpich.
+  
+   * ### Setup Cluster
+      * Todos los nodos deben tener el mismo usuario (mpitest por ejemplo)
+      * Todos los nodos deben usar la misma version de OS Ubuntu (20.04)
+      * Es necesario instalar todos los requerimientos
 ## Hamachi
-Tener instalado desde la SnapStore
-Iniciar el servicio de hamachi
-Sempai123
-sudo systemctl start logmein-hamachi
-sudo systemctl status logmein-hamachi
+* Instalarlo desde https://vpn.net/linux
+* Iniciar el servicio de hamachi
+   * ### Host
+   * El host debe crear una red privada, sudo hamachi create <nombre-red> <contraseña>
+   * Ejemplo: sudo hamachi create SLICnet 1234
+   * ### Worker
+   * Cada worker debe unirse a la red, sudo hamachi join <nombre-red> <contraseña>
+   * Ejemplo: sudo hamachi join SLICnet 1234
 
-## Crear la red
-sudo hamachi login
-sudo hamachi create <nombre> <contrase;a>
-
-## Unirse a la red
-sudo hamachi join <nombre> <contrase;a>
-
-## Listar las redes y comprobar que se unio correctamente
-sudo hamachi list
+* Para comprobar que se han unido correctamente y mostrar todas las computadoras conectadas.
+   * sudo hamachi list
 
 
 ## Openssh
+* ### Instalacion
+   * sudo apt-get install openssh-server
+   * sudo systemctl enable ssh
+   * sudo systemctl start ssh
+* ### Configuracion de /cat/hosts 
+   * Agregar un identificador a cada ip
+   * cat /etc/hosts , editar con: sudo nano /etc/hosts
+     ```
+     <ip-master> <identificador>
+     <ip-worker> <identificador>
+     <ip-worker2 <identificador>
+     ```
+   * Ejemplo : 
+     ```
+     23.93.20.1 master
+     23.93.20.2 worker1
+     23.93.20.3 workerLocal
+     ```
+* ### Conceder acceso con claves autorizadas - Master
+   * ssh-keygen -t rsa
+   * ssh-copy-id <ip-workerx>
+   * Ejemplo:
+        * ssh-copy-id worker1 o ssh-copy-id workerLocal
 
-sudo pacman -S openssh
-sudo systemctl enable sshd.service
-sudo systemctl start sshd.service
-
-
-## OPENSSH config
-
-### /etc/hosts
-Este archivo puede identificar a un host mediante un tag, que facilita el uso de los clusters.
-    
-  
-### sudo nano /etc/hosts
-  
-ssh-keygen -t rsa
-
-cd .ssh
-
-sudo cp id_rsa.pub authorized_keys
-
-ssh-copy-id user@<ip> o user@<tag>
-
-
-#NFS
-De parte del servidor editar esta entrada:
-/etc/exports
-Ejemplo:
-  ~/Escritorio/Parallel-SLIC-Superpixels *(rw,sync,crossmnt,fsid=0)
-  |      Directorio a ser compartido  | |direccion ip| (|argumentos|)
- 
-## Setup del proyecto
-
-### Local
-  Para pruebas locales, solo es necesario clonar el repositorio.
-  
-### Cluster
-  Es necesario instalar todos los requerimientos y ejecutar con mpirun
-  
-
+## NFS
+* ### Instalacion
+   * Master: sudo apt install nfs-kernel-server
+   * Worker: sudo apt install nfs-common
+* ### Configuracion de master
+   * crear directorio
+     ```
+        mkdir /path
+        Ejemplo:
+        mkdir /home/user/SharedFolder
+     ```
+   * Configurar exports /etc/exports
+      * Visualizar: cat /etc/exports , Editar : sudo nano /etc/exports
+        ```
+        /path <ip>(rw,sync,no_subtree_check)
+        Ejemplo:
+        /home/user/ShareFolder 23.90.20.1/24(rw,sync,no_subtree_check)
+        Aclaracion: /24 es la subnet, por lo que cualquier ip dentro del rango sera aceptada
+        Nota: Es posible usar * para permitir a cualquier ip, es solo recomendable usar * para fines academicos
+        ```
+   * Finalmente reinicie nfs para aplicar los cambios 
+     ```
+     sudo systemctl restart nfs-kernel-server
+     ```
+* ### Configuracion de worker
+   * Tener un usuario y path iguales para que pueda usar la carpeta compartida:
+     * Path de master:  /home/user/SharedFolder
+     * Path de worker:  /home/user/SharedFolder
+   * Montar la carpeta
+        ```
+        sudo mount <ip o identificador>:/path /workerpath
+        Ejemplo ip 
+        sudo mount 23.93.20.1:/home/user/SharedFolder /home/user/SharedFolder
+        Ejemplo identificador 
+        sudo mount 23.93.20.1:/home/user/SharedFolder /home/user/SharedFolder
+        ```
+* ### MPICH
+   * Compilacion:
+        ```
+        mpic++ archivo.cpp -o salida archivo1.cpp 
+        ```
+   * Ejecucion:
+        * Especificar nodos mediante el identificador /cat/hosts:
+        ```
+        mpirun -host master,worker1 salida
+        ```
+        * Archivo con arugmentos
+        ```
+        mpirun -host master,worker1 salida arg1 arg2 arg3
+        ```
+        * Especificar cantidad de nucleos por nodo
+        ```diff
+        mpirun -host master:2 ,worker1:2 salida arg1 arg2 arg3
+        ```
+       
 
   
 # Referencia: SLIC Superpixel Implementation
