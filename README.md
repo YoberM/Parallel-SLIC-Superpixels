@@ -1,13 +1,7 @@
 # SLIC superpixels
 
-
-## Requerimientos:
-* Hamachi : Es una aplicacion para crear la red local virtual (VLAN)
-* OpenSSH : Es una aplicacion para la comunicacion entre los nodos.
-* NFS     : Se usa para compartir una carpeta entre todos los nodos.
-* Mpich   : API para implementar programan que se ejecuten en paralelo.
-
 # Setup del proyecto
+
 ## Notas
    * ### Setup Local
       * Para pruebas locales, solo es necesario clonar el repositorio y tener mpich.
@@ -16,6 +10,13 @@
       * Todos los nodos deben tener el mismo usuario (mpitest por ejemplo)
       * Todos los nodos deben usar la misma version de OS Ubuntu (20.04)
       * Es necesario instalar todos los requerimientos
+
+## Requerimientos:
+* Hamachi : Es una aplicacion para crear la red local virtual (VLAN)
+* OpenSSH : Es una aplicacion para la comunicacion entre los nodos.
+* NFS     : Se usa para compartir una carpeta entre todos los nodos.
+* Mpich   : API para implementar programan que se ejecuten en paralelo.
+
 ## Hamachi
 * Instalarlo desde https://vpn.net/linux
 * Iniciar el servicio de hamachi
