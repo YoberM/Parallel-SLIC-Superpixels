@@ -33,7 +33,7 @@ using namespace std;
  * step-size (distance between initial cluster locations) and the colour
  * distance parameter.
  */
-
+/*asd*/
 
 class Slic {
     private:
